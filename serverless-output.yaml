@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sample Shopping list App
+Globals:
+  Function:
+    Runtime: python3.7
+    Timeout: 10
+    MemorySize: 128
+    Environment:
+      Variables:
+        DYNAMODB_NAME:
+          Ref: shoppingDb
+Resources:
+  shoppingDb:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: name
+        AttributeType: S
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: name
+        KeyType: HASH
+      - AttributeName: id
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  ShoppingListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: functions/shopping-list.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: shoppingDb
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /api/shopping
+            Method: get
+      CodeUri: s3://shopping-list-001/818d376b67cdcf5ba44782c3ea373cab
+  ShoppingAddFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: functions/shopping-add.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: shoppingDb
+      Events:
+        PutResource:
+          Type: Api
+          Properties:
+            Path: /api/shopping
+            Method: post
+      CodeUri: s3://shopping-list-001/818d376b67cdcf5ba44782c3ea373cab
+  ShoppiingRemoveFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: functions/shopping-remove.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: shoppingDb
+      Events:
+        DeleteResource:
+          Type: Api
+          Properties:
+            Path: /api/shopping
+            Method: delete
+      CodeUri: s3://shopping-list-001/818d376b67cdcf5ba44782c3ea373cab
